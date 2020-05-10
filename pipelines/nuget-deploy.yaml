@@ -26,6 +26,8 @@ stages:
             workingDirectory: src/${{ project }}
 
       - job: 'Pack'
+        dependsOn:'Builds'
+        condition: succeeded()
         displayName: 'Packing build projects'
         steps:
 
