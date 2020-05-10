@@ -16,8 +16,6 @@ stages:
 
     jobs:
       - job: 'Pack'
-        dependsOn: Builds
-        condition: succeeded()
         displayName: 'Packing build projects'
         steps:
 
