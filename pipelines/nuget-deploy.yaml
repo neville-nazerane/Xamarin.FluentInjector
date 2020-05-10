@@ -20,19 +20,19 @@ stages:
         displayName: 'Building projects to pack'
         steps:
 
-          - ${{ each project in parameters.nugetProjects }}:
-            - script: 'dotnet build -c RELEASE'
-              displayName: Building for ${{ project }}
-              workingDirectory: src/${{ project }}
+        - ${{ each project in parameters.nugetProjects }}:
+          - script: 'dotnet build -c RELEASE'
+            displayName: Building for ${{ project }}
+            workingDirectory: src/${{ project }}
 
       - job: 'Pack'
-          displayName: 'Packing build projects'
-          steps:
+        displayName: 'Packing build projects'
+        steps:
 
-          - ${{ each project in parameters.nugetProjects }}:
-            - script: 'dotnet pack -c RELEASE --no-build -p:PackageVersion 0.0.$(Build.BuildId)'
-              displayName: Packing for ${{ project }}
-              workingDirectory: src/${{ project }}
+        - ${{ each project in parameters.nugetProjects }}:
+          - script: 'dotnet pack -c RELEASE --no-build -p:PackageVersion 0.0.$(Build.BuildId)'
+            displayName: Packing for ${{ project }}
+            workingDirectory: src/${{ project }}
 
 
         
