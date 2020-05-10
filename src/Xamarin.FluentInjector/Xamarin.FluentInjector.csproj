@@ -10,5 +10,29 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.3" />
     <PackageReference Include="Xamarin.Forms" Version="4.6.0.726" />
   </ItemGroup>
+
+
+  <PropertyGroup>
+    <Title>Xamarin Fluent Injector</Title>
+    <Authors>Neville Nazerane</Authors>
+    <PackageDescription>
+        Allows you to use Microsoft.Extensions.DependencyInjection with fluent syntax in xamarin
+    </PackageDescription>
+    <PackageTags>
+      DI dependency injection fluent syntax xamarin forms Microsoft.Extensions.DependencyInjection
+    </PackageTags>
+    <RepositoryUrl>https://github.com/neville-nazerane/Xamarin.FluentInjector</RepositoryUrl>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='RELEASE'">
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+  </PropertyGroup>
+  
+  <ItemGroup Condition="'$(Configuration)'=='DEBUG'">
+    <None Remove="LICENSE.txt" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(Configuration)'=='RELEASE'">
+    <None Include="LICENSE.txt" Pack="true" PackagePath="$(PackageLicenseFile)" />
+  </ItemGroup>
   
 </Project>
