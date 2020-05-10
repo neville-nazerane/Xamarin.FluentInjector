@@ -23,7 +23,7 @@ stages:
           - ${{ each project in parameters.nugetProjects }}:
             - script: 'dotnet build -c RELEASE'
               displayName: building for ${{ project }}
-              workingDirectory: src\${{ project }}
+              workingDirectory: src/${{ project }}
 
 
         
