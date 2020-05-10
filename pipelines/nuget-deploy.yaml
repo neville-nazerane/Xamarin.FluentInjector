@@ -20,6 +20,8 @@ stages:
         displayName: 'Building projects to pack'
         steps:
 
+        - script: 'dotnet --version'
+
         - ${{ each project in parameters.nugetProjects }}:
           - script: 'dotnet build -c RELEASE'
             displayName: Building for ${{ project }}
