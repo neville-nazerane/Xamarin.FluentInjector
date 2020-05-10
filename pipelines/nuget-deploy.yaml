@@ -34,8 +34,8 @@ stages:
 
         - ${{ each project in parameters.nugetProjects }}:
           -script: 'ls'            
-            displayName: LS for ${{ project }}
-            workingDirectory: src/${{ project }}
+           displayName: LS for ${{ project }}
+           workingDirectory: src/${{ project }}
 
 
         - ${{ each project in parameters.nugetProjects }}:
