@@ -33,6 +33,12 @@ stages:
         steps:
 
         - ${{ each project in parameters.nugetProjects }}:
+            -script: 'ls'            
+             displayName: LS for ${{ project }}
+             workingDirectory: src/${{ project }}
+
+
+        - ${{ each project in parameters.nugetProjects }}:
           - script: 'dotnet pack -c RELEASE --no-build -p:PackageVersion 0.0.$(Build.BuildId)'
             displayName: Packing for ${{ project }}
             workingDirectory: src/${{ project }}
