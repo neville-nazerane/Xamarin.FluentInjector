@@ -1,0 +1,27 @@
+
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+parameters:
+  - name: nugetProjects
+    default:
+      - Xamarin.FluentInjector
+
+stages:
+  - stage: 'Packing'
+    displayName: 'Packing into nugets'
+
+    jobs:
+      - job: 'Builds'
+        displayName: 'Building projects to pack'
+        steps:
+
+          - ${{ each project in parameters.nugetProjects }}
+            - script: 'dotnet build src\{{ project }} -c RELEASE'
+              displayName: 'building for {{ project }}'
+              workingDirectory: 'src\{{ project }}'
+
+        
