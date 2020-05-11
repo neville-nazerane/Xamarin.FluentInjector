@@ -8,6 +8,8 @@ using Xamarin.Forms;
 
 namespace Xamarin.FluentInjector
 {
+
+    [Obsolete("Use the IXamAccess interface I have not yet provided")]
     public class InjectorViewModelBase : INotifyPropertyChanged // : BindableObject
     {
 
