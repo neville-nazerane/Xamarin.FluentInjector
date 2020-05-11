@@ -44,7 +44,7 @@ stages:
 
     jobs:
       - deployment: Upload
-        environment: Under Development
+        environment: Public nuget
         strategy:
           runOnce:
             deploy:
