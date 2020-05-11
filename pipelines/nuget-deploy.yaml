@@ -11,18 +11,46 @@ parameters:
       - Xamarin.FluentInjector
 
 stages:
-  - stage: 'Packing'
-    displayName: 'Packing into nugets'
+  - stage: Packing
+    displayName: Packing into nugets
 
     jobs:
-      - job: 'Pack'
-        displayName: 'Packing build projects'
+      - job: Pack
+        displayName: Packing build projects
         steps:
 
         - ${{ each project in parameters.nugetProjects }}:
-          - script: 'dotnet pack -c RELEASE -p:PackageVersion=0.0.$(Build.BuildId)'
+          - script: 'dotnet pack -c RELEASE -p:PackageVersion=0.0.$(Build.BuildId) -o $(Build.ArtifactStagingDirectory) nugets'
+
             displayName: Packing for ${{ project }}
             workingDirectory: src/${{ project }}
 
+      - job: Upload
+        displayName: Upload to artifacts
+        steps:
+          - task: PublishBuildArtifacts@1
+            displayName: Publishing Artifacts
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+              ArtifactName: 'drop'
+              publishLocation: Container
+
+  - stage: Deploy
+    displayName: Upload to nuget.org
+
+    jobs:
+      - deployment: Upload
+        environment: Nuget
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+
+                - task: DotNetCoreCLI@2
+                  inputs:
+                    command: 'push'
+                    packagesToPush: '$(Pipeline.Workspace)/nugets/*.nupkg'
+                    nuGetFeedType: 'external'
+                    publishFeedCredentials: 'Nuget'
 
         
