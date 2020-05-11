@@ -57,7 +57,5 @@ stages:
                   inputs:
                     command: 'push'
                     packagesToPush: '$(Pipeline.Workspace)/drop/nugets/*.nupkg'
-                    nuGetFeedType: 'external'
-                    publishFeedCredentials: 'Nuget'
-
-        
+                    nuGetFeedType: internal
+                    publishVstsFeed: UnderDevelopment
