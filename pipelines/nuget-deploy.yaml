@@ -44,7 +44,7 @@ stages:
               steps:
                 - script: ls $(Pipeline.Workspace)
 
-                - script: ls/nugets $(Pipeline.Workspace)
+                - script: ls/drop/nugets $(Pipeline.Workspace)
                 
                 - task: DotNetCoreCLI@2
                   inputs:
