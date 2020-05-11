@@ -61,6 +61,8 @@ stages:
 
       - deployment: PublicUpload
         environment: Public nuget
+        dependsOn: Upload
+        condition: succeeded()
         strategy:
           runOnce:
             deploy:
