@@ -60,7 +60,7 @@ stages:
 
 
       - deployment: PublicUpload
-        environment: nuget.org
+        environment: Public nuget
         strategy:
           runOnce:
             deploy:
