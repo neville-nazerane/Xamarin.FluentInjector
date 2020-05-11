@@ -58,19 +58,3 @@ stages:
                     nuGetFeedType: 'internal'
                     publishVstsFeed: 'd3be74c2-596b-4ee9-8256-a5f20c55422e/bf974248-3bae-49a4-812e-3d2a165b99b5'
 
-
-      - deployment: PublicUpload
-        environment: Public nuget
-        dependsOn: Upload
-        condition: succeeded()
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                
-                - task: NuGetCommand@2
-                  inputs:
-                    command: 'push'
-                    packagesToPush: '$(Pipeline.Workspace)/drop/nugets/*.nupkg'
-                    nuGetFeedType: external
-                    publishFeedCredentials: 'Nuget'
