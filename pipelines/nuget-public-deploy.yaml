@@ -1,0 +1,60 @@
+
+trigger: 
+  branches:
+    include:
+      - master
+  paths:
+    include:
+      - src
+  
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+parameters:
+  - name: nugetProjects
+    type: object
+    default:
+      - Xamarin.FluentInjector
+
+stages:
+  - stage: Packing
+    displayName: Packing into nugets
+
+    jobs:
+      - job: Pack
+        displayName: Packing build projects
+        steps:
+
+        - ${{ each project in parameters.nugetProjects }}:
+          - script: 'dotnet pack -c RELEASE -p:PackageVersion=0.0-$(Build.BuildId)-beta -o $(Build.ArtifactStagingDirectory)/nugets'
+            displayName: Packing for ${{ project }}
+            workingDirectory: src/${{ project }}
+
+        - task: PublishBuildArtifacts@1
+          displayName: Publishing Artifacts
+          inputs:
+            PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+            ArtifactName: 'drop'
+            publishLocation: Container
+
+
+  - stage: Deploy
+    displayName: Upload to nuget.org
+
+    jobs:
+      - deployment: Upload
+        environment: Under Development
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                
+                - task: NuGetCommand@2
+                  displayName: Internal nuget upload
+                  inputs:
+                    command: 'push'
+                    packagesToPush: '$(Pipeline.Workspace)/drop/nugets/*.nupkg'
+                    nuGetFeedType: external
+                    publishFeedCredentials: NuGet
+
