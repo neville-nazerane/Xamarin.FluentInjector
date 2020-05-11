@@ -44,12 +44,12 @@ stages:
               steps:
                 - script: ls $(Pipeline.Workspace)
 
-                - script: ls/drop/nugets $(Pipeline.Workspace)
+                - script: ls $(Pipeline.Workspace)/drop/nugets
                 
                 - task: DotNetCoreCLI@2
                   inputs:
                     command: 'push'
-                    packagesToPush: '$(Pipeline.Workspace)/nugets/*.nupkg'
+                    packagesToPush: '$(Pipeline.Workspace)/drop/nugets/*.nupkg'
                     nuGetFeedType: 'external'
                     publishFeedCredentials: 'Nuget'
 
