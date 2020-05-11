@@ -45,7 +45,10 @@ stages:
           runOnce:
             deploy:
               steps:
+                - script: ls $(Pipeline.Workspace)
 
+                - script: ls/nugets $(Pipeline.Workspace)
+                
                 - task: DotNetCoreCLI@2
                   inputs:
                     command: 'push'
