@@ -1,5 +1,12 @@
 
-trigger: none
+trigger: 
+  branches:
+    include:
+      - master
+  paths:
+    include:
+      - src
+  
 
 pool:
   vmImage: 'ubuntu-latest'
