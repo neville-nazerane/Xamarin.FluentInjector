@@ -33,14 +33,15 @@ namespace Xamarin.FluentInjector
             };
         }
 
-        public InjectionBuilder(object app)
-        {
-            _services = new ServiceCollection();
-            pageAssembly = app.GetType().Assembly;
-            viewModelAssembly = app.GetType().Assembly;
-        }
+        // ??? no clue why I did this!
+        //public InjectionBuilder(object app)
+        //{
+        //    _services = new ServiceCollection();
+        //    pageAssembly = app.GetType().Assembly;
+        //    viewModelAssembly = app.GetType().Assembly;
+        //}
 
-        #region adding services
+        #region adding singleton
 
         public InjectionBuilder AddSingleton<TService>(Func<IServiceProvider, TService> implementationFactory) 
             where TService : class
@@ -48,10 +49,25 @@ namespace Xamarin.FluentInjector
             _services.AddSingleton(implementationFactory);
             return this;
         }
+        
         public InjectionBuilder AddSingleton<TService>(TService service)
             where TService : class
         {
             _services.AddSingleton(service);
+            return this;
+        }
+
+        public InjectionBuilder AddSingleton<TService, TImplementation>()
+            where TService : class
+            where TImplementation : class, TService
+        {
+            _services.AddSingleton<TService, TImplementation>();
+            return this;
+        }
+        
+        public InjectionBuilder AddSingleton(Type serviceType)
+        {
+            _services.AddSingleton(serviceType);
             return this;
         }
 
@@ -62,26 +78,14 @@ namespace Xamarin.FluentInjector
             return this;
         }
 
-        public InjectionBuilder AddHttpClient<TClient>(Action<HttpClient> action)
-            where TClient : class
-        {
-            _services.AddHttpClient<TClient>(action);
-            return this;
-        }
+        #endregion
 
-        public InjectionBuilder AddHttpClient<TClient, TImplementation>(Action<HttpClient> action)
-            where TClient : class
-            where TImplementation : class, TClient
-        {
-            _services.AddHttpClient<TClient, TImplementation>(action);
-            return this;
-        }
+        #region adding transients
 
-        public InjectionBuilder AddSingleton<TService, TImplementation>()
-            where TService : class
-            where TImplementation : class, TService
+        public InjectionBuilder AddTransient<TService>(Func<IServiceProvider, TService> implementationFactory)
+                where TService : class
         {
-            _services.AddSingleton<TService, TImplementation>();
+            _services.AddTransient(implementationFactory);
             return this;
         }
 
@@ -100,22 +104,35 @@ namespace Xamarin.FluentInjector
             return this;
         }
 
-    //    public InjectionBuilder AddScoped<TService>()
-    //where TService : class
-    //    {
-    //        _services.AddScoped<TService>();
-    //        return this;
-    //    }
+        public InjectionBuilder AddTransient(Type serviceType)
+        {
+            _services.AddTransient(serviceType);
+            return this;
+        }
 
-    //    public InjectionBuilder AddScoped<TService, TImplementation>()
-    //        where TService : class
-    //        where TImplementation : class, TService
-    //    {
-    //        _services.AddScoped<TService, TImplementation>();
-    //        return this;
-    //    } 
         #endregion
 
+        #region other services
+
+        public InjectionBuilder AddHttpClient<TClient>(Action<HttpClient> action)
+            where TClient : class
+        {
+            _services.AddHttpClient<TClient>(action);
+            return this;
+        }
+
+        public InjectionBuilder AddHttpClient<TClient, TImplementation>(Action<HttpClient> action)
+            where TClient : class
+            where TImplementation : class, TClient
+        {
+            _services.AddHttpClient<TClient, TImplementation>(action);
+            return this;
+        }
+
+
+        #endregion
+
+        #region override assemblies
         public InjectionBuilder SetPageAssembly(Assembly assembly)
         {
             pageAssembly = assembly;
@@ -127,6 +144,11 @@ namespace Xamarin.FluentInjector
             viewModelAssembly = assembly;
             return this;
         }
+
+
+        #endregion
+
+        #region override pages
 
         public InjectionBuilder SetDefaultPage(Page page)
         {
@@ -140,6 +162,9 @@ namespace Xamarin.FluentInjector
             return this;
         }
 
+        #endregion
+
+        #region navigation override 
         public InjectionBuilder OverrideNavigate(Action<Page> action)
         {
             InjectionControl.navigationAction = action;
@@ -151,6 +176,8 @@ namespace Xamarin.FluentInjector
             InjectionControl.asyncNavigationFunc = func;
             return this;
         }
+
+        #endregion
 
         public void Build()
         {
