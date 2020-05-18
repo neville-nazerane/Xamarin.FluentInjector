@@ -17,6 +17,7 @@ namespace Xamarin.FluentInjector
         private Assembly pageAssembly;
         private Assembly viewModelAssembly;
         private Page defaultPage;
+
         private bool shouldSetDefaultPage = true;
 
         internal InjectionBuilder(Application app)
@@ -182,42 +183,65 @@ namespace Xamarin.FluentInjector
         public void Build()
         {
 
-            var types = pageAssembly.GetTypes();
-            var filtered = types.Where(t => typeof(Page).IsAssignableFrom(t));
+            #region fetching pages
+
+            var pageTypes = pageAssembly.GetTypes().Where(t => typeof(Page).IsAssignableFrom(t));
+
             Dictionary<string, Type> pages = new Dictionary<string, Type>();
 
-            // fetching pages
-            foreach (Type page in pageAssembly.GetTypes().Where(t => typeof(Page).IsAssignableFrom(t)))
+            foreach (Type page in pageTypes)
             {
-                string name = page.Name;
-                if (name.EndsWith("page", StringComparison.InvariantCultureIgnoreCase) || name.EndsWith("view", StringComparison.InvariantCultureIgnoreCase))
-                    name = name.Substring(0, name.Length - 4);
-                if (pages.ContainsKey(name))
-                    throw new AmbiguousMatchException($"The page name '{name}' is used more than once.");
-                pages[name] = page;
+                string pName = page.Name;
 
-                _services.AddTransient(page);
+                // having 'page' or 'view' is optional
+                if (pName.EndsWith("page", StringComparison.InvariantCultureIgnoreCase) || pName.EndsWith("view", StringComparison.InvariantCultureIgnoreCase))
+                    pName = pName.Substring(0, pName.Length - 4);
+                if (pages.ContainsKey(pName))
+                    throw new AmbiguousMatchException($"The page name '{pName}' is used more than once.");
+                pages[pName] = page;
+
+                _services.AddScoped(page);
             }
 
+            #endregion
 
-            // fetching view models
-           var viewModels = viewModelAssembly.GetTypes()
+            #region fetching viewmodels
+
+            var viewModelTypes = viewModelAssembly.GetTypes()
                                    .Where(t => t.Name.EndsWith("viewmodel", StringComparison.InvariantCultureIgnoreCase)
                                                || t.Name.EndsWith("pagemodel", StringComparison.InvariantCultureIgnoreCase));
-            int count = viewModels.Count();
-            foreach (Type vm in viewModels)
+
+            Dictionary<string, Type> viewModels = new Dictionary<string, Type>();
+
+             
+            int count = viewModelTypes.Count();
+            foreach (Type vm in viewModelTypes)
             {
                 _services.AddScoped(vm);
 
-                string pageName = vm.Name.Substring(0, vm.Name.Length - 9);
-                if (!pages.ContainsKey(pageName))
-                    throw new KeyNotFoundException($"No matching page with name '{pageName}' found for view model ${vm.Name}");
+                string vmName = vm.Name.Substring(0, vm.Name.Length - 9);
+                if (!pages.ContainsKey(vmName))
+                    throw new KeyNotFoundException($"No matching page with name '{vmName}' found for view model ${vm.Name}");
 
+                if (viewModels.ContainsKey(vmName))
+                {
+                    throw new AmbiguousMatchException($"The viewmodel name '{vmName}' is used more than once.");
+                }
+                viewModels[vmName] = vm;
+
+                Type storeService = typeof(PageViewModelStore<>).MakeGenericType(vm);
+                _services.AddScoped(storeService, );
+
+                // the hell is below this line?? 
                 Type controlService = typeof(IPageControl<>).MakeGenericType(vm);
-                Type controlImplimentation = typeof(PageControl<,>).MakeGenericType(pages[pageName], vm);
+                Type controlImplimentation = typeof(PageControl<,>).MakeGenericType(pages[vmName], vm);
                 _services.AddScoped(controlService, controlImplimentation);
-
             }
+
+            #endregion
+
+
+
             InjectionControl._services = _services;
             InjectionControl._provider = _services.BuildServiceProvider();
             if (shouldSetDefaultPage)
@@ -225,7 +249,7 @@ namespace Xamarin.FluentInjector
                 if (defaultPage == null)
                 {
                     // check for viewmodel with name "main"
-                    Type foundViewModel = viewModels.SingleOrDefault(v => v.Name.Equals("mainviewmodel", StringComparison.InvariantCultureIgnoreCase)
+                    Type foundViewModel = viewModelTypes.SingleOrDefault(v => v.Name.Equals("mainviewmodel", StringComparison.InvariantCultureIgnoreCase)
                                                                         || v.Name.Equals("mainpagemodel", StringComparison.InvariantCultureIgnoreCase));
                     if (foundViewModel != null)
                         InjectionControl.Navigate(foundViewModel);
