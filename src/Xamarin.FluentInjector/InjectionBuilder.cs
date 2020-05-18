@@ -12,7 +12,7 @@ namespace Xamarin.FluentInjector
 {
     public class InjectionBuilder
     {
-        private readonly Application _app;
+        private readonly IApplicationConnect _app;
         private readonly ServiceCollection _services;
         private Assembly pageAssembly;
         private Assembly viewModelAssembly;
@@ -20,13 +20,16 @@ namespace Xamarin.FluentInjector
 
         private bool shouldSetDefaultPage = true;
 
-        internal InjectionBuilder(Application app)
+        public InjectionBuilder(IApplicationConnect app)
         {
             _app = app;
             _services = new ServiceCollection();
-            pageAssembly = _app.GetType().Assembly;
-            viewModelAssembly = _app.GetType().Assembly;
-            InjectionControl.navigationAction = p => _app.MainPage = p;
+            pageAssembly = _app.ApplicationAssembly;
+            viewModelAssembly = _app.ApplicationAssembly;
+            InjectionControl.navigationAction = p =>
+            {
+                _app.MainPage = p;
+            };
             InjectionControl.asyncNavigationFunc = p =>
             {
                 _app.MainPage = p;
