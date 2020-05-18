@@ -183,7 +183,7 @@ namespace Xamarin.FluentInjector
 
         #endregion
 
-        public void Build()
+        public IServiceProvider Build()
         {
 
             #region fetching pages
@@ -264,6 +264,7 @@ namespace Xamarin.FluentInjector
                 }
                 else _app.MainPage = defaultPage;
             }
+            return InjectionControl._provider;
         }
 
     }
