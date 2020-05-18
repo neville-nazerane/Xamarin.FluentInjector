@@ -31,7 +31,7 @@ stages:
         steps:
 
         - ${{ each project in parameters.testProjects }}:
-          - script: dotnet test
+          - script: 'dotnet test'
             displayName: Running test: ${{ project }}
             workingDirectory: src/${{ project }}
 
