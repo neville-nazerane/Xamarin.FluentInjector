@@ -32,7 +32,7 @@ stages:
 
         - ${{ each project in parameters.testProjects }}:
           - script: 'dotnet test'
-            displayName: Running test: ${{ project }}
+            displayName: Running test ${{ project }}
             workingDirectory: src/${{ project }}
 
         - ${{ each project in parameters.nugetProjects }}:
