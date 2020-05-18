@@ -12,6 +12,10 @@ pool:
   vmImage: 'ubuntu-latest'
 
 parameters:
+  - name: testProjects
+    type: object
+    default:
+      - Xamarin.FluentInjector.Tests
   - name: nugetProjects
     type: object
     default:
@@ -25,6 +29,11 @@ stages:
       - job: Pack
         displayName: Packing build projects
         steps:
+
+        - ${{ each project in parameters.testProjects }}:
+          - script: dotnet test
+            displayName: Running test: ${{ project }}
+            workingDirectory: src/${{ project }}
 
         - ${{ each project in parameters.nugetProjects }}:
           - script: 'dotnet pack -c RELEASE -p:PackageVersion=0.0.$(Build.BuildId)-$(Build.SourceBranchName) -o $(Build.ArtifactStagingDirectory)/nugets'
