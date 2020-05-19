@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Xamarin.FluentInjector.Providers;
 using Xamarin.Forms;
 
 namespace Xamarin.FluentInjector
@@ -232,7 +233,9 @@ namespace Xamarin.FluentInjector
                 }
                 viewModels[vmName] = vm;
 
-                Type storeService = typeof(PageViewModelStore<>).MakeGenericType(vm);
+                Type providerService = typeof(IPageProvider<>).MakeGenericType(vm);
+                Type providerImplimentation = typeof(PageViewModelProvider<,,>).MakeGenericType(vm, pages[vmName], vm);
+                _services.AddScoped(providerService, providerImplimentation);
                 //_services.AddScoped(storeService, );
 
                 // the hell is below this line?? 
@@ -243,6 +246,21 @@ namespace Xamarin.FluentInjector
 
             #endregion
 
+            // adding providers based on pages
+            foreach (var page in pages)
+            {
+                Type providerService = typeof(IPageProvider<>).MakeGenericType(page.Value);
+                Type providerImplimentation;
+                if (viewModels.ContainsKey(page.Key))
+                {
+                    providerImplimentation = typeof(PageViewModelProvider<,,>).MakeGenericType(page.Value, page.Value, viewModels[page.Key]);
+                }
+                else
+                {
+                    providerImplimentation = typeof(PageProvider<>).MakeGenericType(page.Value);
+                }
+                _services.AddScoped(providerService, providerImplimentation);
+            }
 
 
             InjectionControl._services = _services;
