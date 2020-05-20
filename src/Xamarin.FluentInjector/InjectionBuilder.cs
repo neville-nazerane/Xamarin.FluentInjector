@@ -239,8 +239,8 @@ namespace Xamarin.FluentInjector
                 //_services.AddScoped(storeService, );
 
                 // the hell is below this line?? 
-                Type controlService = typeof(IPageControl<>).MakeGenericType(vm);
-                Type controlImplimentation = typeof(PageControl<,>).MakeGenericType(pages[vmName], vm);
+                Type controlService = typeof(IPageProvider<>).MakeGenericType(vm);
+                Type controlImplimentation = typeof(PageViewModelProvider<,,>).MakeGenericType(vm, pages[vmName], vm);
                 _services.AddScoped(controlService, controlImplimentation);
             }
 

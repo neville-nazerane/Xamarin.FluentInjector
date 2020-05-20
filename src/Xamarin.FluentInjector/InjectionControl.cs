@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Xamarin.FluentInjector.Providers;
 using Xamarin.Forms;
 
 namespace Xamarin.FluentInjector
@@ -19,29 +20,41 @@ namespace Xamarin.FluentInjector
         public static T Resolve<T>() => _provider.GetService<T>();
         public static object Resolve(Type type) => _provider.GetService(type);
 
-        public static Page ResolvePage<TViewModel>()
+        public static Page ResolvePage<T>()
+        {
+            return MakePageProvider(provider => { 
+                return provider.GetService<IPageProvider<T>>();
+            });
+        }
+
+        internal static Page ResolvePage(Type type)
+        {
+            return MakePageProvider(provider => { 
+                var controlType = typeof(IPageProvider<>).MakeGenericType(type);
+                return (IPageProvider)provider.GetService(controlType);
+            });
+        }
+
+        private static Page MakePageProvider(Func<IServiceProvider, IPageProvider> buildPageProvider)
         {
             var scope = _provider.CreateScope();
             var provider = scope.ServiceProvider;
-            var control = provider.GetService<IPageControl<TViewModel>>();
-            return control.Page;
+            var pageProvider = buildPageProvider(provider);
+            return pageProvider.Page;
         }
 
-        internal static Page ResolvePage(Type viewModel)
+        internal static void Setup(IPageProvider provider)
         {
-            var scope = _provider.CreateScope();
-            var provider = scope.ServiceProvider;
-            var controlType = typeof(IPageControl<>).MakeGenericType(viewModel);
-            var control = (IPageProvider)provider.GetService(controlType);
-            return control.Page;
+            // set as current page here
+            provider.Page.BindingContext = provider.ViewModel;
         }
 
-        public static Page Navigate<TViewModel>()
+        public static Page Navigate<T>()
         {
-            Page page = ResolvePage<TViewModel>();
+            Page page = ResolvePage<T>();
             navigationAction?.Invoke(page);
             return page;
-        }
+        } 
 
         internal static Page Navigate(Type viewModel)
         {
@@ -50,9 +63,9 @@ namespace Xamarin.FluentInjector
             return page;
         }
 
-        public static async Task<Page> NavigateAsync<TViewModel>()
+        public static async Task<Page> NavigateAsync<T>()
         {
-            Page page = ResolvePage<TViewModel>();
+            Page page = ResolvePage<T>();
             if (asyncNavigationFunc != null)
                 await asyncNavigationFunc(page);
             return page;
