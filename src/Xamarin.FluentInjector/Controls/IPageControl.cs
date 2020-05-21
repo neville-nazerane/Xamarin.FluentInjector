@@ -6,7 +6,7 @@ using Xamarin.Forms;
 
 namespace Xamarin.FluentInjector
 {
-    internal interface IPageControl
+    public interface IPageControl
     {
 
         object Page { get; }
