@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Xamarin.FluentInjector.Controls;
 using Xamarin.FluentInjector.Providers;
 using Xamarin.Forms;
 
@@ -40,6 +41,17 @@ namespace Xamarin.FluentInjector
             var scope = _provider.CreateScope();
             var provider = scope.ServiceProvider;
             var pageProvider = buildPageProvider(provider);
+
+            // below casting would fail if unit testing mocks IPageControl
+            if (provider.GetService<IPageControl>() is PageControl pageControl)
+            {
+                pageControl._page = pageProvider.Page;
+            }
+
+            if (pageProvider.ViewModel != null)
+            {
+                pageProvider.Page.BindingContext = pageProvider.ViewModel;
+            }
             return pageProvider.Page;
         }
 

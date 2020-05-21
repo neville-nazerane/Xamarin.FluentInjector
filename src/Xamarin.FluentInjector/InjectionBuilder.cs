@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Xamarin.FluentInjector.Controls;
 using Xamarin.FluentInjector.Providers;
 using Xamarin.Forms;
 
@@ -262,6 +263,11 @@ namespace Xamarin.FluentInjector
                 _services.AddScoped(providerService, providerImplimentation);
             }
 
+            #region adding services
+
+            _services.AddScoped<IPageControl, PageControl>();
+
+            #endregion
 
             InjectionControl._services = _services;
             InjectionControl._provider = _services.BuildServiceProvider();

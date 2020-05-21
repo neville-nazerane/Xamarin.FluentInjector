@@ -16,6 +16,7 @@ namespace Xamarin.FluentInjector.Providers
     {
 
         public Page Page { get; }
+
         public object ViewModel { get; }
 
         public PageProvider(TPage page)
