@@ -217,7 +217,7 @@ namespace Xamarin.FluentInjector
                                                || t.Name.EndsWith("pagemodel", StringComparison.InvariantCultureIgnoreCase));
 
             Dictionary<string, Type> viewModels = new Dictionary<string, Type>();
-
+             
              
             int count = viewModelTypes.Count();
             foreach (Type vm in viewModelTypes)

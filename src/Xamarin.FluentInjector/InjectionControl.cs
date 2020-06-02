@@ -21,11 +21,47 @@ namespace Xamarin.FluentInjector
         public static T Resolve<T>() => _provider.GetService<T>();
         public static object Resolve(Type type) => _provider.GetService(type);
 
-        public static Page ResolvePage<T>()
+        #region page 
+
+        internal static void Setup(IPageProvider provider)
         {
+            // set as current page here
+            provider.Page.BindingContext = provider.ViewModel;
+        }
+        
+        internal static Page Navigate(Type viewModel)
+        {
+            Page page = ResolvePage(viewModel);
+            navigationAction?.Invoke(page);
+            return page;
+        }
+
+        /// <summary>
+        /// Resolve a page from the DI container
+        /// </summary>
+        /// <typeparam name="TPage"></typeparam>
+        /// <param name="addData">
+        /// Will be called to add data into the page or viewmodel (whichever type of T is)
+        /// before the viewmodel is bound to the page
+        /// </param>
+        /// <returns></returns>
+        public static Page ResolvePage<T>(Action<T> addData = null)
+        {
+            void preViewModelBinding(IPageProvider pageProvider)
+            {
+                if (typeof(T).IsSubclassOf(typeof(Page)))
+                {
+                    // LOL! casting to obj so compiler will allow casting to T
+                    addData?.Invoke((T)(object)pageProvider.Page);
+                }
+                else
+                {
+                    addData?.Invoke((T)pageProvider.ViewModel);
+                }
+            }
             return MakePageProvider(provider => { 
                 return provider.GetService<IPageProvider<T>>();
-            });
+            }, preViewModelBinding);
         }
 
         internal static Page ResolvePage(Type type)
@@ -36,7 +72,7 @@ namespace Xamarin.FluentInjector
             });
         }
 
-        private static Page MakePageProvider(Func<IServiceProvider, IPageProvider> buildPageProvider)
+        private static Page MakePageProvider(Func<IServiceProvider, IPageProvider> buildPageProvider, Action<IPageProvider> preViewModelBinding = null)
         {
             var scope = _provider.CreateScope();
             var provider = scope.ServiceProvider;
@@ -50,38 +86,28 @@ namespace Xamarin.FluentInjector
 
             if (pageProvider.ViewModel != null)
             {
+                preViewModelBinding?.Invoke(pageProvider);
                 pageProvider.Page.BindingContext = pageProvider.ViewModel;
             }
             return pageProvider.Page;
         }
 
-        internal static void Setup(IPageProvider provider)
+        public static Page Navigate<T>(Action<T> addData = null)
         {
-            // set as current page here
-            provider.Page.BindingContext = provider.ViewModel;
-        }
-
-        public static Page Navigate<T>()
-        {
-            Page page = ResolvePage<T>();
+            Page page = ResolvePage(addData);
             navigationAction?.Invoke(page);
             return page;
         } 
 
-        internal static Page Navigate(Type viewModel)
+        public static async Task<Page> NavigateAsync<T>(Action<T> addData = null)
         {
-            Page page = ResolvePage(viewModel);
-            navigationAction?.Invoke(page);
-            return page;
-        }
-
-        public static async Task<Page> NavigateAsync<T>()
-        {
-            Page page = ResolvePage<T>();
+            Page page = ResolvePage(addData);
             if (asyncNavigationFunc != null)
                 await asyncNavigationFunc(page);
             return page;
         }
+
+        #endregion
 
     }
 }
