@@ -240,9 +240,9 @@ namespace Xamarin.FluentInjector
                 //_services.AddScoped(storeService, );
 
                 // the hell is below this line?? 
-                Type controlService = typeof(IPageProvider<>).MakeGenericType(vm);
-                Type controlImplimentation = typeof(PageViewModelProvider<,,>).MakeGenericType(vm, pages[vmName], vm);
-                _services.AddScoped(controlService, controlImplimentation);
+                //Type controlService = typeof(IPageProvider<>).MakeGenericType(vm);
+                //Type controlImplimentation = typeof(PageViewModelProvider<,,>).MakeGenericType(vm, pages[vmName], vm);
+                //_services.AddScoped(controlService, controlImplimentation);
             }
 
             #endregion
@@ -283,7 +283,7 @@ namespace Xamarin.FluentInjector
                     else
                     {
                         if (pages.ContainsKey("Main"))
-                            InjectionControl.navigationAction?.Invoke((Page)InjectionControl.Resolve(pages["Main"]));
+                            InjectionControl.Navigate(pages["Main"]);
                     }
                 }
                 else _app.MainPage = defaultPage;

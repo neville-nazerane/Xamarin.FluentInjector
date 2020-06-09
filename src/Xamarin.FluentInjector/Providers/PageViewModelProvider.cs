@@ -6,6 +6,7 @@ using Xamarin.Forms;
 
 namespace Xamarin.FluentInjector.Providers
 {
+
     class PageViewModelProvider<T, TPage, TViewModel> : IPageProvider<T>
         where TPage : Page
     {
@@ -17,7 +18,7 @@ namespace Xamarin.FluentInjector.Providers
         public object ViewModel => _viewModel.Value;
 
 
-        internal PageViewModelProvider(TPage page, IServiceProvider serviceProvider)
+        public PageViewModelProvider(TPage page, IServiceProvider serviceProvider)
         {
             Page = page;
             _viewModel = new Lazy<object>(() => serviceProvider.GetService<TViewModel>());
