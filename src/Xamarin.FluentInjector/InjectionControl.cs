@@ -23,12 +23,6 @@ namespace Xamarin.FluentInjector
 
         #region page 
 
-        internal static void Setup(IPageProvider provider)
-        {
-            // set as current page here
-            provider.Page.BindingContext = provider.ViewModel;
-        }
-        
         internal static Page Navigate(Type viewModel)
         {
             Page page = ResolvePage(viewModel);
