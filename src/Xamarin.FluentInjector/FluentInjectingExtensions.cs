@@ -14,14 +14,15 @@ namespace Xamarin.FluentInjector
 
         class ApplicationConnect : IApplicationConnect
         {
-            private readonly Application _app;
+            public Application Source { get; }
 
-            public Page MainPage { get => _app.MainPage; set => _app.MainPage = value; }
-            public Assembly ApplicationAssembly => _app.GetType().Assembly;
+            public Page MainPage { get => Source.MainPage; set => Source.MainPage = value; }
+            public Assembly ApplicationAssembly => Source.GetType().Assembly;
+
 
             public ApplicationConnect(Application app)
             {
-                _app = app;
+                Source = app;
             }
 
         }

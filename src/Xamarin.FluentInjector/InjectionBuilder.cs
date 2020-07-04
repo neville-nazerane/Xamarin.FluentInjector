@@ -6,8 +6,9 @@ using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using Xamarin.FluentInjector.Controls;
-using Xamarin.FluentInjector.Providers;
+using Xamarin.FluentInjector.Configs;
+using Xamarin.FluentInjector.Internals;
+using Xamarin.FluentInjector.Utilities;
 using Xamarin.Forms;
 
 namespace Xamarin.FluentInjector
@@ -18,9 +19,7 @@ namespace Xamarin.FluentInjector
         private readonly ServiceCollection _services;
         private Assembly pageAssembly;
         private Assembly viewModelAssembly;
-        private Page defaultPage;
-
-        private bool shouldSetDefaultPage = true;
+        private Type initialPageType;
 
         public InjectionBuilder(IApplicationConnect app)
         {
@@ -28,15 +27,15 @@ namespace Xamarin.FluentInjector
             _services = new ServiceCollection();
             pageAssembly = _app.ApplicationAssembly;
             viewModelAssembly = _app.ApplicationAssembly;
-            InjectionControl.navigationAction = p =>
-            {
-                _app.MainPage = p;
-            };
-            InjectionControl.asyncNavigationFunc = p =>
-            {
-                _app.MainPage = p;
-                return Task.CompletedTask;
-            };
+            //InjectionControl.navigationAction = p =>
+            //{
+            //    _app.MainPage = p;
+            //};
+            //InjectionControl.asyncNavigationFunc = p =>
+            //{
+            //    _app.MainPage = p;
+            //    return Task.CompletedTask;
+            //};
         }
 
         // ??? no clue why I did this!
@@ -156,34 +155,20 @@ namespace Xamarin.FluentInjector
 
         #region override pages
 
-        public InjectionBuilder SetDefaultPage(Page page)
+        public InjectionBuilder SetInitialPage<TPage>()
+            where TPage : Page
         {
-            defaultPage = page;
-            return this;
-        }
-
-        public InjectionBuilder DisableSettingDefaultPage()
-        {
-            shouldSetDefaultPage = false;
+            initialPageType = typeof(TPage);
             return this;
         }
 
         #endregion
 
-        #region navigation override 
-        public InjectionBuilder OverrideNavigate(Action<Page> action)
+        private IInjectionConfiguration GetConfiguration()
         {
-            InjectionControl.navigationAction = action;
-            return this;
+            // check config from user
+            return new InternalInjectionConfiguration();
         }
-
-        public InjectionBuilder OverrideAsyncNavigate(Func<Page, Task> func)
-        {
-            InjectionControl.asyncNavigationFunc = func;
-            return this;
-        }
-
-        #endregion
 
         public IServiceProvider Build()
         {
@@ -257,32 +242,31 @@ namespace Xamarin.FluentInjector
                 _services.AddScoped(providerService, providerImplimentation);
             }
 
+            var config = GetConfiguration();
+
             #region adding services
 
             _services.AddScoped<IPageControl, PageControl>();
+            _services.AddSingleton(config);
 
             #endregion
 
-            InjectionControl._services = _services;
-            InjectionControl._provider = _services.BuildServiceProvider();
-            if (shouldSetDefaultPage)
+            var provider = _services.BuildServiceProvider();
+
+
+            if (config is InjectionConfiguration conf)
             {
-                if (defaultPage == null)
-                {
-                    // check for viewmodel with name "main"
-                    Type foundViewModel = viewModelTypes.SingleOrDefault(v => v.Name.Equals("mainviewmodel", StringComparison.InvariantCultureIgnoreCase)
-                                                                        || v.Name.Equals("mainpagemodel", StringComparison.InvariantCultureIgnoreCase));
-                    if (foundViewModel != null)
-                        InjectionControl.Navigate(foundViewModel);
-                    else
-                    {
-                        if (pages.ContainsKey("Main"))
-                            InjectionControl.Navigate(pages["Main"]);
-                    }
-                }
-                else _app.MainPage = defaultPage;
+                conf._provider = provider;
+                conf._app = _app;
+                if (initialPageType != null)
+                    conf.InitialPage = conf.ResolvePage(initialPageType);
+                else if (pages.ContainsKey("Main"))
+                    conf.InitialPage = conf.ResolvePage(pages["Main"]);
             }
-            return InjectionControl._provider;
+
+            config.SetInitialPage(_app.Source);
+
+            return provider;
         }
 
     }
