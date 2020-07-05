@@ -29,7 +29,6 @@ namespace Xamarin.FluentInjector
             _dynamicConfig = new DynamicInjectionConfiguration();
             pageAssembly = _app.ApplicationAssembly;
             viewModelAssembly = _app.ApplicationAssembly;
-
         }
 
         #region adding singleton
@@ -250,18 +249,17 @@ namespace Xamarin.FluentInjector
                 _services.AddScoped(providerService, providerImplimentation);
             }
 
-            var config = GetConfiguration();
-
             #region adding services
 
             _services.AddScoped<IPageControl, PageControl>();
-            _services.AddSingleton(config);
+            _services.AddSingleton<IInjectionControl, InjectionControl>();
+            _services.AddSingleton<IInjectionConfiguration>(_dynamicConfig);
 
             #endregion
 
             var provider = _services.BuildServiceProvider();
 
-            if (config is InjectionConfiguration conf)
+            if (_dynamicConfig.Source is InjectionConfiguration conf)
             {
                 conf._provider = provider;
                 conf._app = _app;
@@ -269,12 +267,12 @@ namespace Xamarin.FluentInjector
             }
             Page initialPage = null;
             if (initialPageType != null)
-                initialPage = config.ResolvePage(initialPageType);
+                initialPage = _dynamicConfig.ResolvePage(initialPageType);
             else if (pages.ContainsKey("Main"))
-                initialPage = config.ResolvePage(pages["Main"]);
+                initialPage = _dynamicConfig.ResolvePage(pages["Main"]);
 
 
-            config.SetupMainPage(_app.Source, initialPage);
+            _dynamicConfig.SetupMainPage(_app.Source, initialPage);
 
             return provider;
         }

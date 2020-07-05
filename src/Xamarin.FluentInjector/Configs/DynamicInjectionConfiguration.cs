@@ -13,6 +13,7 @@ namespace Xamarin.FluentInjector.Configs
     {
 
         internal IInjectionConfiguration Source { get; set; }
+        public Application App => Source.App;
 
         public DynamicInjectionConfiguration()
         {

@@ -20,6 +20,8 @@ namespace Xamarin.FluentInjector.Configs
         internal IApplicationConnect _app;
         internal IServiceProvider _provider;
 
+        public Application App => _app.Source;
+
         public virtual void SetViewModel(IPageProvider provider) => provider.Page.BindingContext = provider.ViewModel;
 
         public virtual Page ResolvePage<T>(Action<T> addData = null)

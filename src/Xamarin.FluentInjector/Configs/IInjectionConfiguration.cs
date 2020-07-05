@@ -7,8 +7,9 @@ using Xamarin.Forms;
 
 namespace Xamarin.FluentInjector.Configs
 {
-    public interface IInjectionConfiguration
+    internal interface IInjectionConfiguration
     {
+        Application App { get; }
         Task NavigateAsync(Application app, Page page);
         Page ResolvePage<T>(Action<T> addData = null);
         Page ResolvePage(Type type);
