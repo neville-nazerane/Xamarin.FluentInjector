@@ -15,7 +15,7 @@ namespace Xamarin.FluentInjector.Configs
     public class InjectionConfiguration : IInjectionConfiguration
     {
 
-        public Page InitialPage { get; internal set; }
+        //public Page InitialPage { get; internal set; }
 
         internal IApplicationConnect _app;
         internal IServiceProvider _provider;
@@ -55,7 +55,7 @@ namespace Xamarin.FluentInjector.Configs
             return Task.CompletedTask;
         }
 
-        public virtual void SetInitialPage(Application app) => _app.MainPage = InitialPage;
+        public virtual void SetupMainPage(Application app, Page initialPage) => _app.MainPage = initialPage;
 
         private Page MakePageProvider(Func<IServiceProvider, IPageProvider> buildPageProvider, Action<IPageProvider> preViewModelBinding = null)
         {

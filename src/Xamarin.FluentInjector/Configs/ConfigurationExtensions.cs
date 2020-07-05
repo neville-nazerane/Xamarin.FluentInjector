@@ -9,7 +9,7 @@ namespace Xamarin.FluentInjector.Configs
     {
 
         internal static bool IsExternallyDefined(this IInjectionConfiguration configuration)
-            => configuration is InternalInjectionConfiguration;
+            => !(configuration is InternalInjectionConfiguration);
 
     }
 }

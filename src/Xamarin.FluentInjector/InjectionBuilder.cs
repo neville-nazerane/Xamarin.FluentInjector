@@ -17,6 +17,7 @@ namespace Xamarin.FluentInjector
     {
         private readonly IApplicationConnect _app;
         private readonly ServiceCollection _services;
+        private readonly DynamicInjectionConfiguration _dynamicConfig;
         private Assembly pageAssembly;
         private Assembly viewModelAssembly;
         private Type initialPageType;
@@ -25,26 +26,11 @@ namespace Xamarin.FluentInjector
         {
             _app = app;
             _services = new ServiceCollection();
+            _dynamicConfig = new DynamicInjectionConfiguration();
             pageAssembly = _app.ApplicationAssembly;
             viewModelAssembly = _app.ApplicationAssembly;
-            //InjectionControl.navigationAction = p =>
-            //{
-            //    _app.MainPage = p;
-            //};
-            //InjectionControl.asyncNavigationFunc = p =>
-            //{
-            //    _app.MainPage = p;
-            //    return Task.CompletedTask;
-            //};
-        }
 
-        // ??? no clue why I did this!
-        //public InjectionBuilder(object app)
-        //{
-        //    _services = new ServiceCollection();
-        //    pageAssembly = app.GetType().Assembly;
-        //    viewModelAssembly = app.GetType().Assembly;
-        //}
+        }
 
         #region adding singleton
 
@@ -164,6 +150,28 @@ namespace Xamarin.FluentInjector
 
         #endregion
 
+        #region override configuration
+
+        public InjectionBuilder OverrideNavigate(Func<Application, Page, Task> navigateAsync)
+        {
+            _dynamicConfig.navigateAsync = navigateAsync;
+            return this;
+        }
+
+        public InjectionBuilder OverrideSetupMainPage(Action<Application, Page> setupMainPage)
+        {
+            _dynamicConfig.setupMainPage = setupMainPage;
+            return this;
+        }
+
+        public InjectionBuilder OverrideSetViewModel(Action<IPageProvider> setViewModel)
+        {
+            _dynamicConfig.setViewModel = setViewModel;
+            return this;
+        }
+
+        #endregion
+
         private IInjectionConfiguration GetConfiguration()
         {
             // check config from user
@@ -253,18 +261,20 @@ namespace Xamarin.FluentInjector
 
             var provider = _services.BuildServiceProvider();
 
-
             if (config is InjectionConfiguration conf)
             {
                 conf._provider = provider;
                 conf._app = _app;
-                if (initialPageType != null)
-                    conf.InitialPage = conf.ResolvePage(initialPageType);
-                else if (pages.ContainsKey("Main"))
-                    conf.InitialPage = conf.ResolvePage(pages["Main"]);
+               
             }
+            Page initialPage = null;
+            if (initialPageType != null)
+                initialPage = config.ResolvePage(initialPageType);
+            else if (pages.ContainsKey("Main"))
+                initialPage = config.ResolvePage(pages["Main"]);
 
-            config.SetInitialPage(_app.Source);
+
+            config.SetupMainPage(_app.Source, initialPage);
 
             return provider;
         }

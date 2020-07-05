@@ -12,7 +12,7 @@ namespace Xamarin.FluentInjector.Configs
         Task NavigateAsync(Application app, Page page);
         Page ResolvePage<T>(Action<T> addData = null);
         Page ResolvePage(Type type);
-        void SetInitialPage(Application app);
+        void SetupMainPage(Application app, Page initialPage);
         void SetViewModel(IPageProvider provider);
     }
 }
