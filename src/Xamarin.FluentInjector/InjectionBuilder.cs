@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -151,6 +152,12 @@ namespace Xamarin.FluentInjector
 
         #region override configuration
 
+        public InjectionBuilder UseConfiguration(InjectionConfiguration configuration)
+        {
+            _dynamicConfig.Source = configuration;
+            return this;
+        }
+
         public InjectionBuilder OverrideNavigate(Func<Application, Page, Task> navigateAsync)
         {
             _dynamicConfig.navigateAsync = navigateAsync;
@@ -170,12 +177,6 @@ namespace Xamarin.FluentInjector
         }
 
         #endregion
-
-        private IInjectionConfiguration GetConfiguration()
-        {
-            // check config from user
-            return new InternalInjectionConfiguration();
-        }
 
         public IServiceProvider Build()
         {
