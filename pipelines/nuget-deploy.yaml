@@ -36,7 +36,7 @@ stages:
             workingDirectory: src/${{ project }}
 
         - ${{ each project in parameters.nugetProjects }}:
-          - script: 'dotnet pack -c RELEASE -p:PackageVersion=0.0.$(Build.BuildId)-$(Build.SourceBranchName) -o $(Build.ArtifactStagingDirectory)/nugets'
+          - script: dotnet pack -c RELEASE -p:PackageVersion=0.0.$(Build.BuildId)-${{ replace(variables['Build.SourceBranchName'], '_', '-') }} -o $(Build.ArtifactStagingDirectory)/nugets
             displayName: Packing for ${{ project }}
             workingDirectory: src/${{ project }}
 
