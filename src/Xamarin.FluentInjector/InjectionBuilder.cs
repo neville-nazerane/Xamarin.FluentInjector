@@ -118,20 +118,24 @@ namespace Xamarin.FluentInjector
 
         #endregion
 
-        #region other services
+        #region HttpClients
 
-        public InjectionBuilder AddHttpClient<TClient>(Action<HttpClient> action)
+        public InjectionBuilder AddHttpClient<TClient>(Action<HttpClient> configureClient,
+                                                       Action<IHttpClientBuilder> configureBuilder = null)
             where TClient : class
         {
-            _services.AddHttpClient<TClient>(action);
+            var builder = _services.AddHttpClient<TClient>(configureClient);
+            configureBuilder?.Invoke(builder);
             return this;
         }
 
-        public InjectionBuilder AddHttpClient<TClient, TImplementation>(Action<HttpClient> action)
+        public InjectionBuilder AddHttpClient<TClient, TImplementation>(Action<HttpClient> configureClient,
+                                                                        Action<IHttpClientBuilder> configureBuilder = null)
             where TClient : class
             where TImplementation : class, TClient
         {
-            _services.AddHttpClient<TClient, TImplementation>(action);
+            var builder = _services.AddHttpClient<TClient, TImplementation>(configureClient);
+            configureBuilder?.Invoke(builder);
             return this;
         }
 
