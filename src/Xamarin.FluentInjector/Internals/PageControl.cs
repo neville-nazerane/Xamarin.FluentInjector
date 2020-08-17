@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Xamarin.FluentInjector.Utilities;
 using Xamarin.Forms;
 
-namespace Xamarin.FluentInjector.Controls
+namespace Xamarin.FluentInjector.Internals
 {
     class PageControl : IPageControl
     {

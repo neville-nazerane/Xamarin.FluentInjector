@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using Xamarin.Forms;
 
-namespace Xamarin.FluentInjector.Providers
+namespace Xamarin.FluentInjector.Internals
 {
 
     class PageViewModelProvider<T, TPage, TViewModel> : IPageProvider<T>
