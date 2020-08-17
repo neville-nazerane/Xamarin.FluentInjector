@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,8 +7,9 @@ using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using Xamarin.FluentInjector.Controls;
-using Xamarin.FluentInjector.Providers;
+using Xamarin.FluentInjector.Configs;
+using Xamarin.FluentInjector.Internals;
+using Xamarin.FluentInjector.Utilities;
 using Xamarin.Forms;
 
 namespace Xamarin.FluentInjector
@@ -16,36 +18,19 @@ namespace Xamarin.FluentInjector
     {
         private readonly IApplicationConnect _app;
         private readonly ServiceCollection _services;
+        private readonly DynamicInjectionConfiguration _dynamicConfig;
         private Assembly pageAssembly;
         private Assembly viewModelAssembly;
-        private Page defaultPage;
-
-        private bool shouldSetDefaultPage = true;
+        private Type initialPageType;
 
         public InjectionBuilder(IApplicationConnect app)
         {
             _app = app;
             _services = new ServiceCollection();
+            _dynamicConfig = new DynamicInjectionConfiguration();
             pageAssembly = _app.ApplicationAssembly;
             viewModelAssembly = _app.ApplicationAssembly;
-            InjectionControl.navigationAction = p =>
-            {
-                _app.MainPage = p;
-            };
-            InjectionControl.asyncNavigationFunc = p =>
-            {
-                _app.MainPage = p;
-                return Task.CompletedTask;
-            };
         }
-
-        // ??? no clue why I did this!
-        //public InjectionBuilder(object app)
-        //{
-        //    _services = new ServiceCollection();
-        //    pageAssembly = app.GetType().Assembly;
-        //    viewModelAssembly = app.GetType().Assembly;
-        //}
 
         #region adding singleton
 
@@ -160,30 +145,38 @@ namespace Xamarin.FluentInjector
 
         #region override pages
 
-        public InjectionBuilder SetDefaultPage(Page page)
+        public InjectionBuilder SetInitialPage<TPage>()
+            where TPage : Page
         {
-            defaultPage = page;
-            return this;
-        }
-
-        public InjectionBuilder DisableSettingDefaultPage()
-        {
-            shouldSetDefaultPage = false;
+            initialPageType = typeof(TPage);
             return this;
         }
 
         #endregion
 
-        #region navigation override 
-        public InjectionBuilder OverrideNavigate(Action<Page> action)
+        #region override configuration
+
+        public InjectionBuilder UseConfiguration(InjectionConfiguration configuration)
         {
-            InjectionControl.navigationAction = action;
+            _dynamicConfig.Source = configuration;
             return this;
         }
 
-        public InjectionBuilder OverrideAsyncNavigate(Func<Page, Task> func)
+        public InjectionBuilder OverrideNavigate(Func<Application, Page, Task> navigateAsync)
         {
-            InjectionControl.asyncNavigationFunc = func;
+            _dynamicConfig.navigateAsync = navigateAsync;
+            return this;
+        }
+
+        public InjectionBuilder OverrideSetupMainPage(Action<Application, Page> setupMainPage)
+        {
+            _dynamicConfig.setupMainPage = setupMainPage;
+            return this;
+        }
+
+        public InjectionBuilder OverrideSetViewModel(Action<IPageProvider> setViewModel)
+        {
+            _dynamicConfig.setViewModel = setViewModel;
             return this;
         }
 
@@ -241,12 +234,6 @@ namespace Xamarin.FluentInjector
                 Type providerService = typeof(IPageProvider<>).MakeGenericType(vm);
                 Type providerImplimentation = typeof(PageViewModelProvider<,,>).MakeGenericType(vm, pages[vmName], vm);
                 _services.AddScoped(providerService, providerImplimentation);
-                //_services.AddScoped(storeService, );
-
-                // the hell is below this line?? 
-                //Type controlService = typeof(IPageProvider<>).MakeGenericType(vm);
-                //Type controlImplimentation = typeof(PageViewModelProvider<,,>).MakeGenericType(vm, pages[vmName], vm);
-                //_services.AddScoped(controlService, controlImplimentation);
             }
 
             #endregion
@@ -270,29 +257,29 @@ namespace Xamarin.FluentInjector
             #region adding services
 
             _services.AddScoped<IPageControl, PageControl>();
+            _services.AddSingleton<IInjectionControl, InjectionControl>();
+            _services.AddSingleton<IInjectionConfiguration>(_dynamicConfig);
 
             #endregion
 
-            InjectionControl._services = _services;
-            InjectionControl._provider = _services.BuildServiceProvider();
-            if (shouldSetDefaultPage)
+            var provider = _services.BuildServiceProvider();
+
+            if (_dynamicConfig.Source is InjectionConfiguration conf)
             {
-                if (defaultPage == null)
-                {
-                    // check for viewmodel with name "main"
-                    Type foundViewModel = viewModelTypes.SingleOrDefault(v => v.Name.Equals("mainviewmodel", StringComparison.InvariantCultureIgnoreCase)
-                                                                        || v.Name.Equals("mainpagemodel", StringComparison.InvariantCultureIgnoreCase));
-                    if (foundViewModel != null)
-                        InjectionControl.Navigate(foundViewModel);
-                    else
-                    {
-                        if (pages.ContainsKey("Main"))
-                            InjectionControl.Navigate(pages["Main"]);
-                    }
-                }
-                else _app.MainPage = defaultPage;
+                conf._provider = provider;
+                conf._app = _app;
+               
             }
-            return InjectionControl._provider;
+            Page initialPage = null;
+            if (initialPageType != null)
+                initialPage = _dynamicConfig.ResolvePage(initialPageType);
+            else if (pages.ContainsKey("Main"))
+                initialPage = _dynamicConfig.ResolvePage(pages["Main"]);
+
+
+            _dynamicConfig.SetupMainPage(_app.Source, initialPage);
+
+            return provider;
         }
 
     }

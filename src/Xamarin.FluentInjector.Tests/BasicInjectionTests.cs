@@ -17,10 +17,10 @@ namespace Xamarin.FluentInjector.Tests
         public BasicInjectionTests()
         {
             _mockApp = new Mock<IApplicationConnect>();
-            _app = _mockApp.Object;
-
             _mockApp.SetupGet(a => a.ApplicationAssembly).Returns(GetType().Assembly);
             _mockApp.SetupProperty(a => a.MainPage);
+
+            _app = _mockApp.Object;
         }
 
         [Fact]
@@ -42,7 +42,7 @@ namespace Xamarin.FluentInjector.Tests
                 .AddSingleton<SingletonToInject>()
                 .Build();
 
-            await InjectionControl.NavigateAsync<UsingInjectingViewModel>();
+            //await InjectionControl.NavigateAsync<UsingInjectingViewModel>();
 
             Assert.IsType<UsingInjectingPage>(_app.MainPage);
             Assert.IsType<UsingInjectingViewModel>(_app.MainPage.BindingContext);

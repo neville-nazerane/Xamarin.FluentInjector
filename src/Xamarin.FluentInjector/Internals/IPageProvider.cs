@@ -1,13 +1,13 @@
 ﻿using Xamarin.Forms;
 
-namespace Xamarin.FluentInjector.Providers
+namespace Xamarin.FluentInjector.Internals
 {
     interface IPageProvider<T> : IPageProvider
     {
 
     }
 
-    interface IPageProvider
+    public interface IPageProvider
     {
         Page Page { get; }
         object ViewModel { get; }

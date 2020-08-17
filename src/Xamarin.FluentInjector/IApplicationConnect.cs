@@ -8,6 +8,9 @@ namespace Xamarin.FluentInjector
 {
     public interface IApplicationConnect
     {
+
+        Application Source { get; }
+
         Page MainPage { get; set; }
 
         Assembly ApplicationAssembly { get; }
