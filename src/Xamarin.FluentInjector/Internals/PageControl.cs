@@ -12,11 +12,11 @@ namespace Xamarin.FluentInjector.Internals
     {
 
         internal Page _page;
-        private readonly InjectionConfiguration _configuration;
+        private readonly IInjectionConfiguration _configuration;
 
         public object Page => _page;
 
-        public PageControl(InjectionConfiguration configuration)
+        public PageControl(IInjectionConfiguration configuration)
         {
             _configuration = configuration;
         }
